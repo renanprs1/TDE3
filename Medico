@@ -1,0 +1,40 @@
+package modelo;
+
+public class Medico extends Pessoa {
+    private String crm;
+    private String especialidade;
+
+    public Medico(String nome, String telefone, String email, String crm, String especialidade) throws CampoObrigatorioException {
+        super(nome, telefone, email);
+        setCrm(crm);
+        setEspecialidade(especialidade);
+    }
+
+    public String getCrm() {
+        return crm;
+    }
+
+    public void setCrm(String crm) throws CampoObrigatorioException {
+        if (crm == null || crm.trim().isEmpty()) {
+            throw new CampoObrigatorioException("CRM é obrigatório");
+        }
+        this.crm = crm;
+    }
+
+    public String getEspecialidade() {
+        return especialidade;
+    }
+
+    public void setEspecialidade(String especialidade) throws CampoObrigatorioException {
+        if (especialidade == null || especialidade.trim().isEmpty()) {
+            throw new CampoObrigatorioException("Especialidade é obrigatória");
+        }
+        this.especialidade = especialidade;
+    }
+
+    @Override
+    public void exibir() {
+        System.out.println("CRM: " + crm);
+        System.out.println("Especialidade: " + especialidade);
+    }
+}
