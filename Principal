@@ -1,0 +1,195 @@
+package view;
+
+import controle.ConsultaControle;
+import modelo.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Scanner;
+
+public class Principal {
+    private static ConsultaControle controller = new ConsultaControle();
+    private static Scanner scanner = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        int opcao;
+        do {
+            exibirMenu();
+            opcao = lerInteiro("Digite a opção desejada: ");
+            try {
+                processarOpcao(opcao);
+            } catch (Exception e) {
+                System.out.println("Erro: " + e.getMessage());
+            }
+        } while (opcao != 0);
+    }
+
+    private static void exibirMenu() {
+        System.out.println("\n=== Sistema de Gerenciamento de Consultas Médicas ===");
+        System.out.println("1. Cadastrar Paciente");
+        System.out.println("2. Cadastrar Médico");
+        System.out.println("3. Agendar Consulta");
+        System.out.println("4. Listar Consultas");
+        System.out.println("5. Buscar Consultas por Paciente");
+        System.out.println("6. Cancelar Consulta");
+        System.out.println("0. Sair");
+    }
+
+    private static void processarOpcao(int opcao) throws Exception {
+        switch (opcao) {
+            case 1:
+                cadastrarPaciente();
+                break;
+            case 2:
+                cadastrarMedico();
+                break;
+            case 3:
+                agendarConsulta();
+                break;
+            case 4:
+                listarConsultas();
+                break;
+            case 5:
+                buscarConsultasPorPaciente();
+                break;
+            case 6:
+                cancelarConsulta();
+                break;
+            case 0:
+                System.out.println("Saindo do sistema...");
+                break;
+            default:
+                System.out.println("Opção inválida!");
+        }
+    }
+
+    private static void cadastrarPaciente() throws Exception {
+        System.out.println("\n--- Cadastro de Paciente ---");
+        String nome = lerString("Nome: ");
+        String telefone = lerString("Telefone: ");
+        String email = lerString("Email: ");
+        String cpf = lerString("CPF: ");
+
+        controller.cadastrarPaciente(nome, telefone, email, cpf);
+        System.out.println("Paciente cadastrado com sucesso!");
+    }
+
+    private static void cadastrarMedico() throws Exception {
+        System.out.println("\n--- Cadastro de Médico ---");
+        String nome = lerString("Nome: ");
+        String telefone = lerString("Telefone: ");
+        String email = lerString("Email: ");
+        String crm = lerString("CRM: ");
+        String especialidade = lerString("Especialidade: ");
+
+        controller.cadastrarMedico(nome, telefone, email, crm, especialidade);
+        System.out.println("Médico cadastrado com sucesso!");
+    }
+
+    private static void agendarConsulta(ConsultaControle controle) throws Exception {
+        System.out.println("\n--- Agendamento de Consulta ---");
+        
+     
+        List<Paciente> pacientes = controller.listarPacientes();
+        if (pacientes.isEmpty()) {
+            System.out.println("Nenhum paciente cadastrado. Cadastre um paciente primeiro.");
+            return;
+        }
+        System.out.println("Pacientes disponíveis:");
+        for (int i = 0; i < pacientes.size(); i++) {
+            System.out.println((i + 1) + ". " + pacientes.get(i).getNome());
+        }
+        int pacienteIndex = lerInteiro("Selecione o paciente pelo número: ") - 1;
+        if (pacienteIndex < 0 || pacienteIndex >= pacientes.size()) {
+            System.out.println("Índice inválido!");
+            return;
+        }
+        Paciente paciente = pacientes.get(pacienteIndex);
+
+        
+        List<Medico> medicos = controller.listarMedicos();
+        if (medicos.isEmpty()) {
+            System.out.println("Nenhum médico cadastrado. Cadastre um médico primeiro.");
+            return;
+        }
+        System.out.println("Médicos disponíveis:");
+        for (int i = 0; i < medicos.size(); i++) {
+            Medico medico = medicos.get(i);
+            System.out.println((i + 1) + ". " + medico.getNome() + " - " + medico.getEspecialidade());
+        }
+        int medicoIndex = lerInteiro("Selecione o médico pelo número: ") - 1;
+        if (medicoIndex < 0 || medicoIndex >= medicos.size()) {
+            System.out.println("Índice inválido!");
+            return;
+        }
+        Medico medico = medicos.get(medicoIndex);
+
+     
+        String dataHoraStr = lerString("Data e hora da consulta (dd/MM/yyyy HH:mm): ");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        LocalDateTime dataHora = LocalDateTime.parse(dataHoraStr, formatter);
+
+        String observacoes = lerString("Observações (opcional): ");
+
+        controle.agendarConsulta(paciente, medico, dataHora, observacoes);
+        System.out.println("Consulta agendada com sucesso!");
+    }
+
+    private static void listarConsultas() {
+        System.out.println("\n--- Lista de Consultas ---");
+        List<Consulta> consultas = controle.listarConsultas();
+        if (consultas.isEmpty()) {
+            System.out.println("Nenhuma consulta agendada.");
+        } else {
+            for (Consulta consulta : consultas) {
+                consulta.exibir();
+                System.out.println("----------------------");
+            }
+        }
+    }
+
+    private static void buscarConsultasPorPaciente() {
+        System.out.println("\n--- Buscar Consultas por Paciente ---");
+        String nomePaciente = lerString("Digite parte do nome do paciente: ");
+        List<Consulta> consultas = controller.buscarConsultasPorPaciente(nomePaciente);
+        
+        if (consultas.isEmpty()) {
+            System.out.println("Nenhuma consulta encontrada para pacientes com nome contendo '" + nomePaciente + "'.");
+        } else {
+            System.out.println("Consultas encontradas:");
+            for (Consulta consulta : consultas) {
+                consulta.exibir();
+                System.out.println("----------------------");
+            }
+        }
+    }
+
+    private static void cancelarConsulta() throws Exception {
+        System.out.println("\n--- Cancelar Consulta ---");
+        int id = lerInteiro("Digite o ID da consulta a ser cancelada: ");
+        
+        try {
+            controller.cancelarConsulta(id);
+            System.out.println("Consulta cancelada com sucesso!");
+        } catch (ConsultaNaoEncontradaException e) {
+            System.out.println("Erro ao cancelar consulta: " + e.getMessage());
+        }
+    }
+
+   
+    private static String lerString(String mensagem) {
+        System.out.print(mensagem);
+        return scanner.nextLine();
+    }
+
+    private static int lerInteiro(String mensagem) {
+        while (true) {
+            try {
+                System.out.print(mensagem);
+                return Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Por favor, digite um número válido.");
+            }
+        }
+    }
+}
