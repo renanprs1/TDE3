@@ -1,0 +1,69 @@
+package controle;
+
+import modelo.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ConsultaControle {
+    private List<Paciente> pacientes;
+    private List<Medico> medicos;
+    private List<Consulta> consultas;
+
+    public ConsultaControle() {
+        pacientes = new ArrayList<>();
+        medicos = new ArrayList<>();
+        consultas = new ArrayList<>();
+    }
+
+    public void cadastrarPaciente(String nome, String telefone, String email, String cpf) throws CampoObrigatorioException {
+        Paciente paciente = new Paciente(nome, telefone, email, cpf);
+        pacientes.add(paciente);
+    }
+
+    public List<Paciente> listarPacientes() {
+        return new ArrayList<>(pacientes);
+    }
+
+    public void cadastrarMedico(String nome, String telefone, String email, String crm, String especialidade) throws CampoObrigatorioException {
+        Medico medico = new Medico(nome, telefone, email, crm, especialidade);
+        medicos.add(medico);
+    }
+
+    public List<Medico> listarMedicos() {
+        return new ArrayList<>(medicos);
+    }
+
+    public void agendarConsulta(Paciente paciente, Medico medico, LocalDateTime dataHora, String observacoes) throws CampoObrigatorioException {
+        Consulta consulta = new Consulta(paciente, medico, dataHora, observacoes);
+        consultas.add(consulta);
+    }
+
+    public List<Consulta> listarConsultas() {
+        return new ArrayList<>(consultas);
+    }
+
+    public List<Consulta> buscarConsultasPorPaciente(String nomePaciente) {
+        List<Consulta> resultado = new ArrayList<>();
+        for (Consulta consulta : consultas) {
+            if (consulta.getPaciente().getNome().toLowerCase().contains(nomePaciente.toLowerCase())) {
+                resultado.add(consulta);
+            }
+        }
+        return resultado;
+    }
+
+    public Consulta buscarConsultaPorId(int id) throws ConsultaNaoEncontradaException {
+        for (Consulta consulta : consultas) {
+            if (consulta.getId() == id) {
+                return consulta;
+            }
+        }
+        throw new ConsultaNaoEncontradaException("Consulta com ID " + id + " não encontrada");
+    }
+
+    public void cancelarConsulta(int id) throws ConsultaNaoEncontradaException {
+        Consulta consulta = buscarConsultaPorId(id);
+        consulta.cancelar();
+    }
+}
